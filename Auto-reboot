@@ -1,0 +1,21 @@
+$Files = Get-Childitem -Directory | Measure-Object | %{$_.Count}
+$env:COMPUTERNAME
+$host = $env:COMPUTERNAME
+$mailsettings = -To "GMS <to@gmail.com>" -From "Alerts <from@gmail.com>" -SmtpServer "smtp.google.com" -Credentials username\password -UseSsl
+
+
+
+If ($Files -ge 20) {
+    Send-MailMessage $mailsettings -Subject "Alert: Files getting backed up service restarted"
+    Restart-Service -DisplayName "Dell SonicWALL Universal Management Suite - Web Server"
+    Start-Sleep -Seconds 300
+    
+    $Check = Get-Childitem -Directory | Measure-Object | %{$_.Count}
+    
+    If ($Check -le 19) {
+        Send-MailMessage $mailsettings -Subject "Recovered"
+    Else {
+        Send-MailMessage $mailsettings -Subject "ALERT: Please Check $host"
+        }
+    }
+}
